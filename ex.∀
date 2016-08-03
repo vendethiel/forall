@@ -2,4 +2,4 @@ pVQhN
 r(\d+)
 r$*#
 r!`#+
-nsay "[$_]"
+nsay join '',map{chr(1+ord)}split ''
