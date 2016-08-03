@@ -6,6 +6,7 @@ my %languages =
   p => "PYTH",
   r => "RETINA",
   c => "CJAM",
+  y => "JELLY",
   n => "PERL5_N",
   N => "PERL6_N",
 ;
@@ -14,6 +15,8 @@ my @with-path = <PYTH RETINA CJAM>;
 
 my %interpreters =
   PYTH => "python3",
+  CJAM => "java todo",
+  #JELLY => "python",
   PERL5_N => "perl",
   PERL6_N => "perl6",
 ;
@@ -49,6 +52,10 @@ sub run-program($type, @program, $in) {
     }
     when "RETINA" {
       run $interpreter, $path, "-m", ("-e" X @program).flat, :out, :$in;
+    }
+    when "JELLY" {
+      my ($arg1, $arg2, @) = $in.slurp-rest.lines;
+      run $interpreter, 'eu', $program, $arg1, $arg2, :out;
     }
     when "PERL5_N" {
       run $interpreter, "-MList::Util", "-nE", "chomp; $program", :out, :$in;
