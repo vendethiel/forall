@@ -6,10 +6,16 @@ my %languages =
   p => "PYTH",
   r => "RETINA",
   c => "CJAM",
+  n => "PERL5_N",
+  N => "PERL6_N",
 ;
+
+my @with-path = <PYTH RETINA CJAM>;
 
 my %interpreters =
   PYTH => "python3",
+  PERL5_N => "perl",
+  PERL6_N => "perl6",
 ;
 
 sub parse-programs(@lines is copy) {
@@ -29,14 +35,26 @@ sub parse-programs(@lines is copy) {
 
 sub run-program($type, @program, $in) {
   my $language = %languages{$type} // die "No such language: $type";
-  my $interpreter = %*ENV{"{$language}_CMD"} // %interpreters{$language} // die "No interpreter for $language";
-  my $path = %*ENV{"{$language}_PATH"} // die "No path for $language (env var: `{$language}_PATH`)";
+  my $interpreter = %*ENV{"{$language}_CMD"} // %interpreters{$language};
+  die "No interpreter for $language" unless $interpreter;
+  my $path;
+  if $language eq any(@with-path) {
+    $path = %*ENV{"{$language}_PATH"};
+    die "No path for $language (env var: `{$language}_PATH`)" unless $path;
+  }
+  my $program = @program.join: "\n";
   my $proc = do given $language {
     when "PYTH" {
-      run $interpreter, $path, "-c", @program.join("\n"), :out, :$in;
+      run $interpreter, $path, "-c", $program, :out, :$in;
     }
     when "RETINA" {
       run $interpreter, $path, "-m", ("-e" X @program).flat, :out, :$in;
+    }
+    when "PERL5_N" {
+      run $interpreter, "-nE", "chomp; $program", :out, :$in;
+    }
+    when "PERL6_N" {
+      run $interpreter, "-ne", $program, :out, :$in;
     }
     default { die "Language not yet configured: $language" } 
   }
@@ -50,5 +68,5 @@ sub MAIN(File $file, Str :$retina?, Str :$pyth?) {
   for @programs -> % (:$type, :@lines) {
     $in = run-program($type, @lines, $in);
   }
-  say $in.slurp-rest;
+  print $in.slurp-rest;
 }
