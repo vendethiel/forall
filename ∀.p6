@@ -51,7 +51,7 @@ sub run-program($type, @program, $in) {
       run $interpreter, $path, "-m", ("-e" X @program).flat, :out, :$in;
     }
     when "PERL5_N" {
-      run $interpreter, "-nE", "chomp; $program", :out, :$in;
+      run $interpreter, "-MList::Util", "-nE", "chomp; $program", :out, :$in;
     }
     when "PERL6_N" {
       run $interpreter, "-ne", $program, :out, :$in;
