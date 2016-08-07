@@ -4,4 +4,4 @@ r(\d+)
 r$*#
 r!`#+
 nsay join '',map{chr(5+ord)}split ''
-Nsay $_>>.succ
+Nsay $_».succ

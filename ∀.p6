@@ -6,12 +6,10 @@ my %languages =
   p => "PYTH",
   r => "RETINA",
   c => "CJAM",
-  y => "JELLY",
+  y => "JELLY", # NOTE: Don't forget your LANG/LC_ALL! Tho then perl will complain...
   n => "PERL5_N",
   N => "PERL6_N",
 ;
-
-my @with-path = <PYTH RETINA CJAM>;
 
 my %interpreters =
   PYTH => "python3",
@@ -40,18 +38,17 @@ sub run-program($type, @program, $in) {
   my $language = %languages{$type} // die "No such language: $type";
   my $interpreter = %*ENV{"{$language}_CMD"} // %interpreters{$language};
   die "No interpreter for $language" unless $interpreter;
-  my $path;
-  if $language eq any(@with-path) {
-    $path = %*ENV{"{$language}_PATH"};
-    die "No path for $language (env var: `{$language}_PATH`)" unless $path;
+  sub script {
+    my $script = %*ENV{"{$language}_PATH"};
+    $script // die "No path for $language (env var: `{$language}_PATH`)";
   }
   my $program = @program.join: "\n";
   my $proc = do given $language {
     when "PYTH" {
-      run $interpreter, $path, "-c", $program, :out, :$in;
+      run $interpreter, script, "-c", $program, :out, :$in;
     }
     when "RETINA" {
-      run $interpreter, $path, "-m", ("-e" X @program).flat, :out, :$in;
+      run $interpreter, script, "-m", ("-e" X @program).flat, :out, :$in;
     }
     when "JELLY" {
       my ($arg1, $arg2, @) = $in.slurp-rest.lines;
