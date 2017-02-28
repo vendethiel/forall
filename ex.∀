@@ -1,6 +1,6 @@
 y+
 pVsQN
-r(\d+)
+r\d+
 r$*#
 r!`#+
 nsay join '',map{chr(5+ord)}split ''
